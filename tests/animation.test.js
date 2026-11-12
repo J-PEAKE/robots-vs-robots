@@ -1,0 +1,5 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {createAnimator} from '../src/animation.js';
+test('reduced motion still waits for completion and cleans animation',async()=>{let finish,cancelled=false;const element={animate(frames,options){assert.equal(options.duration,30);return {finished:new Promise(r=>finish=r),cancel(){cancelled=true;}};}};const engine=createAnimator({matches:true});let done=false;const task=engine.play(element,[],1000).then(()=>done=true);await Promise.resolve();assert.equal(done,false);finish();await task;assert.equal(cancelled,true);});
+test('cancelling a screen rejects pending animation and blocks later phases',async()=>{let reject;const engine=createAnimator({matches:false});const task=engine.play({animate(){return {finished:new Promise((_,r)=>reject=r),cancel(){reject(new DOMException('Cancelled','AbortError'));}};}},[],100);engine.cancel();await assert.rejects(task,{name:'AbortError'});await assert.rejects(engine.play({},[],100),{name:'AbortError'});});
