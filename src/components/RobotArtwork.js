@@ -1,0 +1,1 @@
+export const robotArtwork = (robot, extraClass = '') => `<img class="robot-art ${robot.id} ${extraClass}" src="${import.meta.env.BASE_URL}assets/robots/${robot.artwork}.svg" alt="${robot.name}${robot.id === 'karat' ? ', an orange karate robot with a red bandanna' : ', a blue robot with sunglasses, a backwards cap and a giant shoulder cannon'}" draggable="false">`;
