@@ -19,7 +19,7 @@ function chime(kind = 'click') {
   try {
     audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
     audioContext.resume().catch(() => {});
-    const notes = kind === 'confirm' ? [523, 659, 784] : kind === 'select' ? [440, 660] : [600];
+    const notes = ({confirm:[523,659,784],select:[440,660],summon:[330,660,990],swing:[880,440],impact:[180,100],dodge:[700,1100],dance:[440,554,659]})[kind] || [600];
     notes.forEach((frequency, i) => {
       const oscillator = audioContext.createOscillator();
       const gain = audioContext.createGain();
@@ -63,4 +63,5 @@ app.addEventListener('click', event => {
   if (target && game.navigate(target.dataset.action)) { chime(['ready', 'soon'].includes(target.dataset.action) ? 'confirm' : 'click'); render(); }
 });
 render(false);
+
 
