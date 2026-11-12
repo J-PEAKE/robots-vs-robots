@@ -1,3 +1,5 @@
+import { mountBattle } from './BattleScreen.js';
+let stopBattle;
 import './styles/main.css';
 import { characters } from './data/characters.js';
 import { createGame } from './state.js';
@@ -38,12 +40,14 @@ document.querySelector('#sound').addEventListener('click', () => { soundEnabled 
 document.querySelector('.brand').addEventListener('click', e => { e.preventDefault(); if (game.navigate('title')) render(); });
 
 function render(focus = true) {
+  stopBattle?.(); stopBattle = null;
   const robot = game.selected;
   app.dataset.screen = game.screen;
   if (game.screen === 'title') app.innerHTML = `<section class="title-screen"><span class="eyebrow pill">A LITTLE ROBOT. A BIG ADVENTURE.</span><h1 class="game-logo" tabindex="-1"><span>ROBOTS</span><em>VS</em><span>ROBOTS</span></h1><p class="tagline">Find your robot. Make a mighty team.</p><div class="title-cast"><div class="title-robot title-karat">${robotArtwork(characters[0])}<span class="name-tag">Karat <i>↗</i></span></div><div class="title-center">${button('PLAY <span aria-hidden="true">▶</span>', 'select')}<span class="play-note">Your adventure starts here!</span><span class="mini-stars" aria-hidden="true">✦ &nbsp; ✧ &nbsp; ✦</span></div><div class="title-robot title-cano">${robotArtwork(characters[1])}<span class="name-tag">Cano <i>↖</i></span></div></div><div class="title-bottom"><span class="bolt-icon">ϟ</span> TWO ROBOTS. ENDLESS POSSIBILITIES. <span class="bolt-icon">ϟ</span></div></section>`;
   if (game.screen === 'select') app.innerHTML = `<section class="select-screen"><div class="screen-nav">${back('title')}${steps(1)}</div><div class="screen-heading"><span class="eyebrow">MEET YOUR NEW TEAMMATE</span><h1 tabindex="-1">CHOOSE YOUR <span>ROBOT!</span></h1><p>Two awesome bots. Who’s your favourite?</p></div><div class="cards">${characters.map(c => robotCard(c, robot?.id === c.id)).join('')}</div><div class="selection-footer"><p id="selection-hint">${robot ? `${robot.name} is ready for an adventure!` : 'Tap a robot to team up!'}</p><button class="toy-button" data-action="ready" ${robot ? '' : 'disabled'}>LET’S GO! <span aria-hidden="true">→</span></button></div></section>`;
   if (game.screen === 'ready') app.innerHTML = `<section class="ready-screen"><div class="screen-nav">${back('select')}${steps(2)}</div><div class="screen-heading"><span class="eyebrow">DREAM TEAM? ASSEMBLED.</span><h1 tabindex="-1">READY TO <span>BATTLE!</span></h1><p>You and ${robot.name}. A mighty little team.</p></div><div class="ready-stage ${robot.id}"><span class="celebration c1">✦</span><span class="celebration c2">✦</span><span class="celebration c3">✧</span><span class="ready-halo"></span>${robotArtwork(robot)}<div class="ready-name"><h2>${robot.name}</h2><span>LV ${robot.level} <i>•</i> <b>♥ ${robot.maxHp} HP</b></span></div></div>${button('START BATTLE <span aria-hidden="true">ϟ</span>', 'soon')}<p class="small-note">Adventure looks good on you.</p></section>`;
   if (game.screen === 'soon') app.innerHTML = `<section class="soon-screen"><div class="screen-nav">${back('select')}${steps(3)}</div><div class="soon-panel"><span class="eyebrow pill">GREAT THINGS ARE CHARGING UP</span><div class="battery" aria-hidden="true"><span></span><span></span><span></span><b>ϟ</b></div><h1 tabindex="-1">BATTLES<br><span>COMING SOON!</span></h1><p>${robot.name} is warming up!<br>Our next adventure is still in the workshop.</p><div class="soon-robots">${characters.map(c => robotArtwork(c)).join('')}</div>${button('CHOOSE A ROBOT <span aria-hidden="true">↻</span>', 'select')}<p class="small-note">For now, get to know your team.</p></div></section>`;
+  if (game.screen === 'soon') stopBattle = mountBattle(app, robot.id, () => { game.navigate('select'); render(); }, chime);
   if (focus) { app.querySelector('h1')?.focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior: 'instant' }); }
 }
 app.addEventListener('click', event => {
@@ -59,3 +63,4 @@ app.addEventListener('click', event => {
   if (target && game.navigate(target.dataset.action)) { chime(['ready', 'soon'].includes(target.dataset.action) ? 'confirm' : 'click'); render(); }
 });
 render(false);
+
